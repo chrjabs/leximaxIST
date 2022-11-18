@@ -6,6 +6,7 @@
 #include <MaxSATFormula.h>
 #include <ParserPB.h>
 #include <Encoder.h>
+#include <Mcnf.h>
 #include <string>
 #include <iostream>
 #include <cstdlib>
@@ -59,52 +60,63 @@ int main(int argc, char *argv[])
         std::cout << "c Parsing instance file " << options.get_input_file_name() << "...\n";
     }
     
-    // read pbmo file
-    leximaxIST::MaxSATFormula maxsat_formula;
-    leximaxIST::ParserPB parser_pb (&maxsat_formula);
-    parser_pb.parse(options.get_input_file_name().c_str());
-    
-    // add hard clauses
-    for (size_t pos (0); pos < maxsat_formula.nHard(); ++pos) {
-        std::vector<int> hc (maxsat_formula.getHardClause(pos).clause);
-        solver.add_hard_clause(hc);
-    }
-    
-    // use an encoder to encode the pseudo-boolean constraints to cnf and add the clauses to solver
-    leximaxIST::Encoder enc (leximaxIST::_INCREMENTAL_NONE_,
-                             options.get_card_enc(),
-                             leximaxIST::_AMO_LADDER_,
-                             options.get_pb_enc());
-    // pb constraints
-    for (int i = 0; i < maxsat_formula.nPB(); i++) {
-        // Make sure the PB is on the form <=
-        if (!maxsat_formula.getPBConstraint(i)._sign)
-            maxsat_formula.getPBConstraint(i).changeSign();
-        enc.encodePB(solver, maxsat_formula.getPBConstraint(i)._lits,
-                        maxsat_formula.getPBConstraint(i)._coeffs,
-                        maxsat_formula.getPBConstraint(i)._rhs);
-    }
-    // cardinality and at most one
-    for (int i = 0; i < maxsat_formula.nCard(); i++) {
-        if (maxsat_formula.getCardinalityConstraint(i)._rhs == 1) {
-            enc.encodeAMO(solver, maxsat_formula.getCardinalityConstraint(i)._lits);
-        } else {
-            enc.encodeCardinality(solver,
-                                    maxsat_formula.getCardinalityConstraint(i)._lits,
-                                    maxsat_formula.getCardinalityConstraint(i)._rhs);
+    if (options.get_input_file_type() == leximaxIST::Options::FileType::OPB) {
+        // read pbmo file
+        leximaxIST::MaxSATFormula maxsat_formula;
+        leximaxIST::ParserPB parser_pb (&maxsat_formula);
+        parser_pb.parse(options.get_input_file_name().c_str());
+        
+        // add hard clauses
+        for (size_t pos (0); pos < maxsat_formula.nHard(); ++pos) {
+            std::vector<int> hc (maxsat_formula.getHardClause(pos).clause);
+            solver.add_hard_clause(hc);
         }
-    }
-    
-    // add objective functions
-    for (int i (0); i < maxsat_formula.nObjFunctions(); ++i) {
-        std::vector<std::pair<uint64_t, leximaxIST::Clause>> soft_clauses;
-        const leximaxIST::PBObjFunction &obj (maxsat_formula.getObjFunction(i));
-        for (size_t j (0); j < obj._lits.size(); ++j) {
-            leximaxIST::Clause sc;
-            sc.push_back(-(obj._lits.at(j)));
-            soft_clauses.push_back(std::make_pair(obj._coeffs.at(j), sc));
+        
+        // use an encoder to encode the pseudo-boolean constraints to cnf and add the clauses to solver
+        leximaxIST::Encoder enc (leximaxIST::_INCREMENTAL_NONE_,
+                                options.get_card_enc(),
+                                leximaxIST::_AMO_LADDER_,
+                                options.get_pb_enc());
+        // pb constraints
+        for (int i = 0; i < maxsat_formula.nPB(); i++) {
+            // Make sure the PB is on the form <=
+            if (!maxsat_formula.getPBConstraint(i)._sign)
+                maxsat_formula.getPBConstraint(i).changeSign();
+            enc.encodePB(solver, maxsat_formula.getPBConstraint(i)._lits,
+                            maxsat_formula.getPBConstraint(i)._coeffs,
+                            maxsat_formula.getPBConstraint(i)._rhs);
         }
-        solver.add_soft_clauses(soft_clauses);
+        // cardinality and at most one
+        for (int i = 0; i < maxsat_formula.nCard(); i++) {
+            if (maxsat_formula.getCardinalityConstraint(i)._rhs == 1) {
+                enc.encodeAMO(solver, maxsat_formula.getCardinalityConstraint(i)._lits);
+            } else {
+                enc.encodeCardinality(solver,
+                                        maxsat_formula.getCardinalityConstraint(i)._lits,
+                                        maxsat_formula.getCardinalityConstraint(i)._rhs);
+            }
+        }
+        
+        // add objective functions
+        for (int i (0); i < maxsat_formula.nObjFunctions(); ++i) {
+            std::vector<std::pair<uint64_t, leximaxIST::Clause>> soft_clauses;
+            const leximaxIST::PBObjFunction &obj (maxsat_formula.getObjFunction(i));
+            for (size_t j (0); j < obj._lits.size(); ++j) {
+              leximaxIST::Clause sc;
+              sc.push_back(-(obj._lits.at(j)));
+              soft_clauses.push_back(std::make_pair(obj._coeffs.at(j), sc));
+            }
+            solver.add_soft_clauses(soft_clauses);
+        }
+    } else {
+        // read dimacs mcnf file
+        leximaxIST::Mcnf mcnf(options.get_input_file_name());
+        for (leximaxIST::Clause cl : mcnf.hards) {
+            solver.add_hard_clause(cl);
+        }
+        for (auto obj : mcnf.softs) {
+            solver.add_soft_clauses(obj);
+        }
     }
     
     // approximation

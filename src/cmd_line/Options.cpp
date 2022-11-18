@@ -25,6 +25,12 @@ namespace leximaxIST {
     int Options::get_pb_enc() {return m_pb_enc.get_data();}
     int Options::get_card_enc() {return m_card_enc.get_data();}
     const std::string& Options::get_ilp_solver() {return m_ilp_solver.get_data();}
+
+    Options::FileType Options::get_input_file_type() {
+        return (m_input_file_type.get_data() ? Options::FileType::MCNF : Options::FileType::OPB);
+    }
+    bool Options::get_preprocessing() {return m_preprocessing.get_data();}
+    const std::string& Options::get_maxpre_techiques() {return m_maxpre_techniques.get_data();}
     
     // constructor
     Options::Options()
@@ -44,6 +50,9 @@ namespace leximaxIST {
     , m_card_enc (_CARD_MTOTALIZER_)
     , m_leave_tmp_files (0)
     , m_ilp_solver ("gurobi")
+    , m_input_file_type (0)
+    , m_preprocessing (0)
+    , m_maxpre_techniques ("[[uvsrgc]VRTG]")
     {
         // help
         const std::string name_tab (2, ' ');
@@ -154,6 +163,24 @@ namespace leximaxIST {
         description += values_tab + "'gurobi' (default)\n";
         description += values_tab + "'cplex'\n";
         m_ilp_solver.set_description(description);
+
+        // input file type
+        description = name_tab + "--input-file-type\n";
+        description += exp_tab + "The type of the input file\n";
+        description += values_tab + "0 (default) - OPB\n";
+        description += values_tab + "1 - MCNF\n";
+        m_input_file_type.set_description(description);
+
+        // preprocessing
+        description = name_tab + "--preprocessing\n";
+        description += exp_tab + "Turn on preprocessing with MaxPre\n";
+        m_preprocessing.set_description(description);
+
+        // maxpre techniques
+        description = name_tab + "--maxpre-techniques\n";
+        description += exp_tab + "The techniques to use in MaxPre\n";
+        description += values_tab + "default: [[uvsrgc]VRTG]\n";
+        m_maxpre_techniques.set_description(description);
     }
 
     /* converts optarg to a double and stores it in d
@@ -229,6 +256,9 @@ namespace leximaxIST {
             {"pb-enc",  required_argument,  0, 505},
             {"card-enc",  required_argument,  0, 506},
             {"ilp-solver",  required_argument,  0, 507},
+            {"input-file-type",  required_argument,  0, 508},
+            {"preprocessing",  no_argument,  &(m_preprocessing.get_data()), 1},
+            {"maxpre-techniques",  required_argument,  0, 509},
             {0, 0, 0, 0}
                 };
         int c;
@@ -252,6 +282,8 @@ namespace leximaxIST {
                 case 505: read_digit(optarg, "--pb-enc", m_pb_enc.get_data()); break;
                 case 506: read_digit(optarg, "--card-enc", m_card_enc.get_data()); break;
                 case 507: m_ilp_solver.get_data() = optarg; break;
+                case 508: read_digit(optarg, "--input-file-type", m_input_file_type.get_data()); break;
+                case 509: m_maxpre_techniques.get_data() = optarg; break;
                 case '?':
                     if (isprint (optopt))
                         fprintf (stderr, "Unknown option `-%c'.\n", optopt);
@@ -304,6 +336,9 @@ namespace leximaxIST {
         os << m_gia_pareto.get_description();
         os << m_pb_enc.get_description();
         os << m_card_enc.get_description();
+        os << m_input_file_type.get_description();
+        os << m_preprocessing.get_description();
+        os << m_maxpre_techniques.get_description();
     }
 
 }

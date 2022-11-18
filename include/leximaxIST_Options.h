@@ -38,6 +38,9 @@ namespace leximaxIST {
     }
 
     class Options {
+    public:
+        enum FileType { OPB, MCNF };
+
     private:
         Option<int> m_help;
         Option<int> m_verbosity;
@@ -55,6 +58,10 @@ namespace leximaxIST {
         Option<int> m_pb_enc;
         Option<int> m_card_enc;
         Option<std::string> m_ilp_solver;
+
+        Option<int> m_input_file_type;
+        Option<int> m_preprocessing;
+        Option<std::string> m_maxpre_techniques;
         
     public:
         Options(); // starts Options with default settings and descriptions
@@ -76,6 +83,11 @@ namespace leximaxIST {
         int get_pb_enc();
         int get_card_enc();
         const std::string& get_ilp_solver();
+
+        FileType get_input_file_type();
+
+        bool get_preprocessing();
+        const std::string& get_maxpre_techiques();
         
     private:
         void read_integer(const char *optarg, const std::string &optname, int &i);
