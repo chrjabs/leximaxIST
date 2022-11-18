@@ -11,6 +11,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <signal.h>
+#include <preprocessorinterface.hpp>
 
 leximaxIST::Solver solver;
 
@@ -59,6 +60,8 @@ int main(int argc, char *argv[])
         print_header();
         std::cout << "c Parsing instance file " << options.get_input_file_name() << "...\n";
     }
+
+    maxPreprocessor::PreprocessorInterface * prepro = nullptr;
     
     if (options.get_input_file_type() == leximaxIST::Options::FileType::OPB) {
         // read pbmo file
@@ -111,12 +114,62 @@ int main(int argc, char *argv[])
     } else {
         // read dimacs mcnf file
         leximaxIST::Mcnf mcnf(options.get_input_file_name());
-        for (leximaxIST::Clause cl : mcnf.hards) {
-            solver.add_hard_clause(cl);
+
+        if (options.get_preprocessing()) {
+            std::vector<std::vector<int>> clauses{};
+            std::vector<std::vector<uint64_t>> weights{};
+            uint64_t top_weight = 1;
+
+            clauses.reserve(mcnf.hards.size());
+            weights.reserve(mcnf.hards.size());
+            for (leximaxIST::Clause cl : mcnf.hards) {
+                clauses.push_back(cl);
+                weights.push_back({});
+            }
+            for (size_t idx = 0; idx < mcnf.softs.size(); ++idx) {
+                auto obj = mcnf.softs[idx];
+                clauses.reserve(clauses.size() + obj.size());
+                weights.reserve(weights.size() + obj.size());
+                for (auto cl : obj) {
+                    top_weight += cl.first;
+                    clauses.push_back(cl.second);
+                    std::vector<uint64_t> w(idx+1, 0);
+                    w.back() = cl.first;
+                    weights.push_back(w);
+                }
+            }
+
+            prepro = new maxPreprocessor::PreprocessorInterface(clauses, weights, top_weight);
+            prepro->preprocess(options.get_maxpre_techiques());
+            clauses.clear();
+            weights.clear();
+            std::vector<int> labels{};
+            prepro->getInstance(clauses, weights, labels, true);
+
+            std::vector<std::vector<std::pair<uint64_t, leximaxIST::Clause>>> softs(mcnf.softs.size());
+            for (size_t i = 0; i < clauses.size(); ++i) {
+                leximaxIST::Clause cl = clauses[i];
+                std::vector<uint64_t> ws = weights[i];
+                bool is_hard = true;
+                for (size_t idx = 0; idx < ws.size(); ++idx) {
+                    if (ws[idx] == top_weight) continue;
+                    softs[idx].push_back(std::make_pair(ws[idx], cl));
+                    is_hard = false;
+                }
+                if (is_hard) solver.add_hard_clause(cl);
+            }
+            for (auto obj : softs) {
+                solver.add_soft_clauses(obj);
+            }
+        } else {
+            for (leximaxIST::Clause cl : mcnf.hards) {
+                solver.add_hard_clause(cl);
+            }
+            for (auto obj : mcnf.softs) {
+                solver.add_soft_clauses(obj);
+            }
         }
-        for (auto obj : mcnf.softs) {
-            solver.add_soft_clauses(obj);
-        }
+
     }
     
     // approximation
@@ -138,6 +191,15 @@ int main(int argc, char *argv[])
         solver.optimise();
     }
     
-    solver.print_solution();
+
+    if (prepro) {
+        std::vector<int> sol = solver.get_solution();
+        std::vector<int> rec_sol = prepro->reconstruct(sol);
+        solver.print_solution(rec_sol);
+        delete prepro;
+    } else {
+        solver.print_solution();
+    }
+
     return 0;
 }

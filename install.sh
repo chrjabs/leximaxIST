@@ -1,8 +1,12 @@
-echo "Removing old cadical, libleximax.a and cbc..." && \
-rm -rf cadical && rm -rf lib && rm -rf bin && rm -rf cbc && rm -rf mccs-1.1/objs \
+echo "Removing old cadical, old MaxPre, libleximax.a and cbc..." && \
+rm -rf cadical && rm -rf maxpre && rm -rf lib && rm -rf bin && rm -rf cbc && rm -rf mccs-1.1/objs \
 echo "Setting up CaDiCaL..." && \
 git clone https://github.com/arminbiere/cadical.git && \
 cd cadical && ./configure --competition && make && \
+cd .. && \
+echo "Setting up MaxPre..." && \
+git clone git@bitbucket.org:hannesihalainen/maxpre.git && cd maxpre && git switch biopt &&\
+make lib && \
 echo "Compiling leximaxIST library and command line tool..." && \
 cd .. && \
 mkdir -v lib && mkdir -v bin && \

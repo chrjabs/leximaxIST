@@ -371,9 +371,15 @@ namespace leximaxIST {
             }
         }
     }
+
+    void Solver::print_solution() const
+    {
+        std::vector<int> solution (get_solution());
+        print_solution(solution);
+    }
     
     // prints solution to std output in a similar format to the MaxSAT output format
-    void Solver::print_solution() const 
+    void Solver::print_solution(std::vector<int> solution) const 
     {
         // print solution status
         std::cout << "s ";
@@ -390,7 +396,6 @@ namespace leximaxIST {
             return;
         }
         size_t i (1);
-        std::vector<int> solution (get_solution());
         while (i < solution.size()) {
             std::string line ("v ");
             while (line.size() < 80 && i < solution.size()) {

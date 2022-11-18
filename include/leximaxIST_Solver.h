@@ -84,6 +84,8 @@ namespace leximaxIST
         char get_status() const;
         
         void print_solution() const; // prints solution in a similar format to the MaxSAT output format
+
+        void print_solution(std::vector<int>) const; // prints solution in a similar format to the MaxSAT output format
         
         //int get_num_opts() const;
         

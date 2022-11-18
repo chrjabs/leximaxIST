@@ -11,13 +11,13 @@ LIB = ../lib/libleximaxIST.a
 TOOL = ../bin/leximaxIST
 
 # path to sat solver library and to leximaxIST library
-LN_PATHS = -L ../lib -L ../cadical/build
+LN_PATHS = -L ../lib -L ../cadical/build -L ../maxpre/src/lib
 
 # libraries' names
-LN_NAMES = -lz -lcadical -lleximaxIST
+LN_NAMES = -lz -lcadical -lleximaxIST -lmaxpre
 
 # path to sat solver include directory containing ipasir.h
-CFLAGS += -I ../cadical/src
+CFLAGS += -I ../cadical/src -I ../maxpre/src
 
 ifdef PROF
 	CFLAGS+= -g -pg -fprofile-arcs -ftest-coverage
