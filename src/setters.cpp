@@ -230,10 +230,10 @@ namespace leximaxIST {
     // add an objective function in the form of a set of soft clauses (so the goal is to minimise clause falsification)
     void Solver::add_soft_clauses(const std::vector<Clause> &soft_clauses)
     {
-        if (soft_clauses.empty()) {
-            print_error_msg("In function leximaxIST::Solver::add_soft_clauses, empty objective function");
-            exit(EXIT_FAILURE);
-        }
+        // if (soft_clauses.empty()) {
+        //     print_error_msg("In function leximaxIST::Solver::add_soft_clauses, empty objective function");
+        //     exit(EXIT_FAILURE);
+        // }
         ++m_num_objectives;
         // set m_snet_info to a vector of (0,0) pairs
         m_snet_info.resize(m_num_objectives, std::pair(0,0));
@@ -269,10 +269,10 @@ namespace leximaxIST {
 
     void Solver::add_soft_clauses(const std::vector<std::pair<uint64_t, Clause>> &soft_clauses)
     {
-        if (soft_clauses.empty()) {
-            print_error_msg("In function leximaxIST::Solver::add_soft_clauses, empty objective function");
-            exit(EXIT_FAILURE);
-        }
+        // if (soft_clauses.empty()) {
+        //     print_error_msg("In function leximaxIST::Solver::add_soft_clauses, empty objective function");
+        //     exit(EXIT_FAILURE);
+        // }
         ++m_num_objectives;
         // set m_snet_info to a vector of (0,0) pairs
         m_snet_info.resize(m_num_objectives, std::pair(0,0));

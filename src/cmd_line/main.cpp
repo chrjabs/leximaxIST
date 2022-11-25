@@ -153,13 +153,19 @@ int main(int argc, char *argv[])
                 bool is_hard = true;
                 for (size_t idx = 0; idx < ws.size(); ++idx) {
                     if (ws[idx] == top_weight) continue;
-                    softs[idx].push_back(std::make_pair(ws[idx], cl));
                     is_hard = false;
+                    if (ws[idx] == 0) continue;
+                    softs[idx].push_back(std::make_pair(ws[idx], cl));
                 }
                 if (is_hard) solver.add_hard_clause(cl);
             }
             for (auto obj : softs) {
                 solver.add_soft_clauses(obj);
+            }
+            // fix to force solving single-objective problems
+            if (softs.size() == 1) {
+                std::vector<leximaxIST::Clause> empty = {};
+                solver.add_soft_clauses(empty);
             }
         } else {
             for (leximaxIST::Clause cl : mcnf.hards) {
@@ -167,6 +173,11 @@ int main(int argc, char *argv[])
             }
             for (auto obj : mcnf.softs) {
                 solver.add_soft_clauses(obj);
+            }
+            // fix to force solving single-objective problems
+            if (mcnf.softs.size() == 1) {
+                std::vector<leximaxIST::Clause> empty = {};
+                solver.add_soft_clauses(empty);
             }
         }
 
