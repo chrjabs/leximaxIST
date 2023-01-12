@@ -25,6 +25,13 @@
 #ifndef SOLVERWRAPPERTYPES_HH
 #define	SOLVERWRAPPERTYPES_HH
 
+#ifdef ENCODING_EXTRACTOR
+#include "basic_clause.hh"
+#include "EncodingExtractor.hh"
+typedef BasicClause*    ClausePointer;
+typedef EncodingExtractor SolverType;
+#endif
+
 #ifdef EXTERNAL_SOLVER
 #include "basic_clause.hh"
 #include "ExternalWrapper.hh"

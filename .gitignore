@@ -10,4 +10,5 @@ bin/*
 .vscode/
 maxpre/
 old_packup/packup
+old_packup/packup2mcnf
 mccs-1.1/objs/

@@ -8,8 +8,10 @@ RAGEL?=ragel
 BISON?=bison
 CCC?=g++
 XTRGT = packup
+LIB_IGNORE_SRCS = cudf_msu.cc ExternalWrapper.cc
 CSRCS = $(wildcard *.cc) 
-COBJS = $(CSRCS:.cc=.o)
+COBJS = $(filter-out packup2mcnf.o EncodingExtractor.o, $(CSRCS:.cc=.o))
+LIB_OBJS = $(filter-out $(LIB_IGNORE_SRCS:.cc=.o),$(COBJS))
 LIBD = 
 LIBS =
 INCD = 
@@ -69,11 +71,17 @@ debug : LNFLAGS += -g
 debug : CFLAGS += -g
 debug : $(XTRGT)
 
+packup2mcnf : CFLAGS += -UEXTERNAL_SOLVER -DENCODING_EXTRACTOR -O3
+packup2mcnf : packup2mcnf.o EncodingExtractor.o libobjs
+	$(CXX) $(LIB_OBJS) packup2mcnf.o EncodingExtractor.o $(LNFLAGS) $(LIBD) $(LIBS) -o $@
+
 $(XTRGT): objs 
 	@echo Linking: $@
 	$(CXX) $(COBJS) $(LNFLAGS) $(LIBD) $(LIBS) -o $@ 
 
 objs: Lexer.o p.tab.o $(COBJS) 
+
+libobjs: Lexer.o p.tab.o $(LIB_OBJS)
 
 depend:
 	makedepend -- -I. $(CFLAGS) -- *.cc
@@ -91,4 +99,4 @@ depend:
 #	$(BISON) --defines=p.tab.hh -o p.tab.cc p.bison
 
 clean:
-	rm -f $(XTRGT) $(COBJS)      
+	rm -f $(XTRGT) $(COBJS) pacup2mcnf.o EncodingExtractor.o packup2mcnf
