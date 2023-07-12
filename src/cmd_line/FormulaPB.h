@@ -33,6 +33,7 @@
 #include <string>
 #include <map>
 #include <cmath>
+#include <cstdint>
 
 namespace leximaxIST {
     

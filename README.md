@@ -1,4 +1,13 @@
 # leximaxIST
+
+## Modifications in This Fork
+
+- Fixed build
+- Slightly more efficient blocking literals for weighted soft clauses
+- Input file parser for _clausal_ multi-objective instances (MCNF)
+- Preprocessing with MaxPre 2.1 (only with MCNF input)
+- Tool for extracting PackUP instances as MCNF (`old_packup/packup2mcnf`)
+
 ## Description
 Boolean Leximax Optimisation solver.
 Given a Multi-Objective Boolean Optimisation formula, the solver can be used to find a leximax-optimal solution or to approximate a leximax-optimal solution.

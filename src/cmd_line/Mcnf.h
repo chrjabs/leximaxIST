@@ -28,6 +28,7 @@
 
 #include <vector>
 #include <string>
+#include <cstdint>
 
 #include "leximaxIST_types.h"
 

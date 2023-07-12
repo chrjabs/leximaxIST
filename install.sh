@@ -5,14 +5,14 @@ git clone https://github.com/arminbiere/cadical.git && \
 cd cadical && ./configure --competition && make && \
 cd .. && \
 echo "Setting up MaxPre..." && \
-git clone git@bitbucket.org:hannesihalainen/maxpre.git && cd maxpre && git switch biopt &&\
+git clone https://bitbucket.org/coreo-group/maxpre2.git maxpre && cd maxpre &&\
 make lib && \
 echo "Compiling leximaxIST library and command line tool..." && \
 cd .. && \
 mkdir -v lib && mkdir -v bin && \
 cd src && make clean release && \
 echo "Compiling packup..." && \
-cd ../old_packup/ && make clean release  && \
+cd ../old_packup/ && make clean release packup2mcnf && \
 echo "Compiling mccs with ILP solver Cbc..." && \
 echo "Installing Cbc..." && \
 cd .. && mkdir -v cbc && cd cbc && \

@@ -10,6 +10,7 @@
 #include <utility> // std::pair
 #include <list> // std::list
 #include <sys/types.h> // pid_t
+#include <cstdint>
 
 
 namespace leximaxIST

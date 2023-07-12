@@ -45,6 +45,7 @@
 #include <map>
 #include <string>
 #include <set>
+#include <cstdint>
 
 namespace leximaxIST {
 
